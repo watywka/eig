@@ -1,6 +1,6 @@
 #include "eig.h"
 #define A(i,j)  ((i)*n + j)
-#define eps 1.0e-8
+#define eps 1.0e-18
 #define eq(a,b) ((a-b<eps) && (b-a<eps))
 #define jord_c 5
 
@@ -101,7 +101,7 @@ void printm(FILE* fout, int n, double* a)
 int tridiag(int n, double* a)
 {   
 
-    double sphi, cphi, olx, oly, olbii, olbij, olbji, olbjj, sq;
+    double sphi, cphi, olx, oly, olbii, olbij, olbji, olbjj, sq, tmp1, tmp2, nor, v1, v2;
     for(int j = 0;j<n-2;j++)
     {
         for(int i = j+2; i<n;i++)
@@ -133,12 +133,41 @@ int tridiag(int n, double* a)
 
         }
     }
-
-
-    if(debug)
+    for(int p = 0 ; p< 16; p++)
     {
-        fprintf(stderr,"\n\nTridiagonal form:\n");
-	    printm(stderr,n,a);
+    for(int i = 0; i < n-1; i++)
+    {
+        sq = sqrt(a[A(i,i)]*a[A(i,i)] + a[A(i+1,i)]*a[A(i+1,i)]);
+        nor = sqrt((a[A(i,i)] - sq)*(a[A(i,i)] - sq) + a[A(i+1,i)]*a[A(i+1,i)]);
+        tmp1 =(a[A(i,i)] - sq) /nor;
+        tmp2 = a[A(i+1,i)]/nor;
+        a[A(i,i)] = sq;
+        a[A(i+1,i)] = 0;
+        olx = tmp1 * a[A(i,i+1)] + tmp2 * a[A(i+1,i+1)];
+        a[A(i,i+1)] = a[A(i,i+1)] - 2*tmp1*olx;
+        a[A(i+1,i+1)] = a[A(i+1,i+1)] - 2*tmp2*olx;
+        olx = tmp1 * a[A(i,i+2)] + tmp2* a[A(i+1,i+2)];
+        if (i<n-2) a[A(i+1,i+2)] = a[A(i+1,i+2)] - 2*tmp2*olx;
+        if (i>0)
+        {
+            olx = v1*a[A(i-1,i-1)] + v2 * a[A(i-1,i)];
+            a[A(i-1,i-1)] = a[A(i-1,i-1)] - 2*v1*olx;
+            olx = v2*a[A(i,i)];
+            a[A(i,i-1)] = - 2*v1*olx;
+            a[A(i,i)] = a[A(i,i)] - 2*v2*olx;
+        } 
+        v1 = tmp1;
+        v2 = tmp2;
+    }
+    olx = v1*a[A(n-2,n-2)] + v2*a[A(n-2,n-1)];
+    a[A(n-2,n-2)] = a[A(n-2,n-2)] - 2*v1*olx;
+    olx = v2*a[A(n-1,n-1)];
+    a[A(n-1,n-2)] = - 2*v1*olx;
+    a[A(n-1,n-1)] = a[A(n-1,n-1)] - 2*v2*olx;
+    for(int i = 0; i < n-1; i++)
+    {
+        a[A(i,i+1)] = a[A(i+1,i)];
+    } 
     }
     return 1;
 }

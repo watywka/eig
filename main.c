@@ -183,7 +183,7 @@ int main(int argc, char* argv[])
     printm(stdout,n,a);
     clock_gettime(CLOCK_MONOTONIC,&begin);
     fprintf(stdout,"\n");
-    tridiag(n,a);
+    if(! tridiag(n,a)) fprintf(stderr,"Unable\n");
     printm(stdout,n,a);
     clock_gettime(CLOCK_MONOTONIC, &end);
     printf("\nTime spent:%fs\n",((end.tv_sec-begin.tv_sec)+(double)(end.tv_nsec-begin.tv_nsec)/1000000000));
