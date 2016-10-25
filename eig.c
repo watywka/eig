@@ -1,6 +1,6 @@
 #include "eig.h"
 #define A(i,j)  ((i)*n + j)
-#define eps 1.0e-18
+#define eps 1.0e-15
 #define eq(a,b) ((a-b<eps) && (b-a<eps))
 #define jord_c 5
 
@@ -98,10 +98,32 @@ void printm(FILE* fout, int n, double* a)
 
 }
 
-int tridiag(int n, double* a)
+double norm(int n, double* a)
+{
+    double max = 0;
+    double tmp = 0;
+    for(int i = 0; i < n; i++)
+    {
+        max+=abs(a[A(0,i)]);
+    }
+    for(int j = 1; j < n; j++)
+    {
+        tmp = 0;
+        for(int i=0;i<n;i++)
+        {
+            tmp+=abs(a[A(j,i)]);
+        }
+        if(tmp>=max) max = tmp;
+    }
+    return max;
+}
+
+int tridiag(int n, double* a, double e)
 {   
 
-    double sphi, cphi, olx, oly, olbii, olbij, olbji, olbjj, sq, tmp1, tmp2, nor, v1, v2;
+    double sphi, cphi, olx, oly, olbii, olbij, olbji, olbjj, sq, tmp1, tmp2, nor, v1, v2, norma;
+    int re=0;
+    norma = norm(n,a);
     for(int j = 0;j<n-2;j++)
     {
         for(int i = j+2; i<n;i++)
@@ -133,12 +155,14 @@ int tridiag(int n, double* a)
 
         }
     }
-    for(int p = 0 ; p< 16; p++)
+    while(fabs(a[A(n-1,n-2)])>e*norma)
     {
+        re++;
     for(int i = 0; i < n-1; i++)
     {
         sq = sqrt(a[A(i,i)]*a[A(i,i)] + a[A(i+1,i)]*a[A(i+1,i)]);
         nor = sqrt((a[A(i,i)] - sq)*(a[A(i,i)] - sq) + a[A(i+1,i)]*a[A(i+1,i)]);
+        if(eq(nor,0)) continue;
         tmp1 =(a[A(i,i)] - sq) /nor;
         tmp2 = a[A(i+1,i)]/nor;
         a[A(i,i)] = sq;
@@ -146,8 +170,7 @@ int tridiag(int n, double* a)
         olx = tmp1 * a[A(i,i+1)] + tmp2 * a[A(i+1,i+1)];
         a[A(i,i+1)] = a[A(i,i+1)] - 2*tmp1*olx;
         a[A(i+1,i+1)] = a[A(i+1,i+1)] - 2*tmp2*olx;
-        olx = tmp1 * a[A(i,i+2)] + tmp2* a[A(i+1,i+2)];
-        if (i<n-2) a[A(i+1,i+2)] = a[A(i+1,i+2)] - 2*tmp2*olx;
+        if (i<n-2) a[A(i+1,i+2)] = a[A(i+1,i+2)] - 2*tmp2*(tmp1 * a[A(i,i+2)] + tmp2* a[A(i+1,i+2)]);
         if (i>0)
         {
             olx = v1*a[A(i-1,i-1)] + v2 * a[A(i-1,i)];
@@ -169,5 +192,6 @@ int tridiag(int n, double* a)
         a[A(i,i+1)] = a[A(i+1,i)];
     } 
     }
+    printf("%d\n",re);
     return 1;
 }

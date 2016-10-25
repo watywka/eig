@@ -10,7 +10,7 @@ int restr;
 int main(int argc, char* argv[])
 {
     int n = 10;
-    double  eps;
+    double  epsillon;
     double  *a, *ta;
     int opt;
     int fflag = 0,xflag = 0;
@@ -44,16 +44,17 @@ int main(int argc, char* argv[])
             debug=1;
             break;
         case 'e':
-            if(sscanf(optarg,"%lf",&eps) != 1)
+            if(sscanf(optarg,"%lf",&epsillon) != 1)
             {
                 fprintf(stderr,"Cannot read precision value\n");
                 return -1;
             }
-            if(eps<0)
+            if(epsillon<0)
             {
                 fprintf(stderr,"Negative precision value\n");
                 return -1;
             }
+            break;
         case 'x':
             if(xflag == 1)
             {
@@ -183,7 +184,7 @@ int main(int argc, char* argv[])
     printm(stdout,n,a);
     clock_gettime(CLOCK_MONOTONIC,&begin);
     fprintf(stdout,"\n");
-    if(! tridiag(n,a)) fprintf(stderr,"Unable\n");
+    if(! tridiag(n,a,epsillon)) fprintf(stderr,"Unable\n");
     printm(stdout,n,a);
     clock_gettime(CLOCK_MONOTONIC, &end);
     printf("\nTime spent:%fs\n",((end.tv_sec-begin.tv_sec)+(double)(end.tv_nsec-begin.tv_nsec)/1000000000));
