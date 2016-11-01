@@ -9,18 +9,8 @@ extern int restr;
 
 enum FUNC formula(char* str)
 {
-    if(strcmp(str, "symm") == 0)
-        return  symm;
-    if(strcmp(str, "positive_symm") == 0)
-        return positive_symm;
-    if(strcmp(str, "hilbert") == 0)
-        return hilbert;
-    if(strcmp(str, "upper") == 0)
-        return upper;
-    if(strcmp(str,"disg")==0)
-        return disg;
-    if(strcmp(str,"jord")==0)
-        return jord;
+    if(strcmp(str,"test")==0)
+        return test;
     return errf;
 }
 
@@ -31,33 +21,23 @@ void fill(enum FUNC xin,int n, double* a)
         for(int j=0;j<n;j++)
         {
             switch(xin) {
-                case symm:
-                    a[A(i,j)] = abs(i-j);
-                    break;
-                case positive_symm:
-                    a[A(i,j)] = 1+abs(i-j);
-                    break;
-                case hilbert:
-                    a[A(i,j)] = 1./(double)(i+j+1);
-                    break;
-                case upper:
-                    if(i==j) a[A(i,j)] = 1;
-                    if(i>j) a[A(i,j)] = 0;
-                    if(i<j) a[A(i,j)] = -1;
-                    break;
-                case disg:
-                    if(i>j)
-                        a[A(i,j)] = n-i;
-                    else
-                        a[A(i,j)] = n-j;
-                    break;
-                case jord:
-                    if(i==j)
-                        a[A(i,j)] = 1;
-                    else if(i==j-1)
-                        a[A(i,j)] = jord_c;
-                    else
+                case test:
+                    if(i == n -1)
+                    {
+                        a[A(i,j)] = j;
+                    }
+                    else if(j == n-1)
+                    {
+                        a[A(i,j)] = i;
+                    }
+                    else if(i==j)
+                    {
+                         a[A(i,j)] = 1;
+                    }
+                    else 
+                    {
                         a[A(i,j)] = 0;
+                    }
                 case errf:
                     break;
             }
@@ -156,12 +136,13 @@ int tridiag(int n, double* a, double e)
 
         }
     }
+    printf("\n\n Tridiag: \n");
+    printm(stdout, n,a);
     while(r>2)
     {
     while(fabs(a[A(r-1,r-2)])>e*norma)
     {
         re++;
-        //printf("%lf %d %d\n",a[A(0,0)], r, re);
         for(int i = 0; i < r-1; i++)
         {
             if(eq(a[A(i+1,i)],0)) continue; // a nuznho li otrazhat?(net)
@@ -169,24 +150,29 @@ int tridiag(int n, double* a, double e)
             nor = sqrt((a[A(i,i)] - sq)*(a[A(i,i)] - sq) + a[A(i+1,i)]*a[A(i+1,i)]);
             tmp1 =(a[A(i,i)] - sq) /nor;
             tmp2 = a[A(i+1,i)]/nor;
-            //a[A(i,i)] = sq;
             a[A(i,i)] = a[A(i,i)] -2*tmp1*(tmp1*a[A(i,i)]+tmp2*a[A(i+1,i)]);;
-            //if(sq!=a[A(i,i)]) printf("DDDD\n");
             a[A(i+1,i)] = 0;
+            printf("\n Povernuli perviy stoolbec\n");
+            printm(stdout,n,a);
+            scanf("%lf",&sphi);
             olx = tmp1 * a[A(i,i+1)] + tmp2 * a[A(i+1,i+1)];
             a[A(i,i+1)] = a[A(i,i+1)] - 2*tmp1*olx;
             a[A(i+1,i+1)] = a[A(i+1,i+1)] - 2*tmp2*olx;
+            printf("\n Povernuli vtorooy stoolbec\n");
+            printm(stdout,n,a);
             if (i<r-2) a[A(i+1,i+2)] = a[A(i+1,i+2)] - 2*tmp2*(tmp1 * a[A(i,i+2)] + tmp2* a[A(i+1,i+2)]);
             if (i>0)
             {
                 olx = v1*a[A(i-1,i-1)] + v2 * a[A(i-1,i)];
                 a[A(i-1,i-1)] = a[A(i-1,i-1)] - 2*v1*olx;
+                a[A(i-1,i)] = a[A(i-1,i)] - 2*v2*olx;
                 olx = v2*a[A(i,i)];
                 a[A(i,i-1)] = - 2*v1*olx;
                 a[A(i,i)] = a[A(i,i)] - 2*v2*olx;
             }
             v1 = tmp1;
             v2 = tmp2;
+            if(i==0) printm(stdout,n,a);
         }
         olx = v1*a[A(r-2,r-2)] + v2*a[A(r-2,r-1)];
         a[A(r-2,r-2)] = a[A(r-2,r-2)] - 2*v1*olx;

@@ -8,12 +8,7 @@
 
 enum FUNC
 {
-    symm,
-    positive_symm,
-    hilbert,
-	upper,
-	disg,
-	jord,
+	test,
     errf
 };
 extern int debug;
