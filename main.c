@@ -10,6 +10,9 @@ int restr;
 int main(int argc, char* argv[])
 {
     int n = 10;
+    double trdif=0;
+    double atr = 0, tatr=0;
+    double alength = 0, talength = 0, ldiff =0;
     double  epsillon=0.0000001;
     double  *a, *ta;
     int opt;
@@ -188,6 +191,21 @@ int main(int argc, char* argv[])
     printm(stdout,n,a);
     clock_gettime(CLOCK_MONOTONIC, &end);
     printf("\nTime spent:%fs\n",((end.tv_sec-begin.tv_sec)+(double)(end.tv_nsec-begin.tv_nsec)/1000000000));
+    
+    for (int i=0;i<n;i++)
+    {
+        atr +=a[i*n+i];
+        tatr += ta[i*n+i];
+        for(int j=0;j<n;j++)
+        {
+            alength += a[i*n+j]*a[i*n+j];
+            talength += ta[i*n+j]*ta[i*n+j];
+        }
+    }
+    ldiff = alength - talength;
+    trdif = atr - tatr;
+    printf("trace A: %lf\n eigenvalues sum: %lf \n diff: %lf \n", atr, tatr, trdif);
+    printf("length A: %lf\n new length: %lf \n diff: %lf \n", alength, talength, ldiff);
     free(ta);
     free(a);
     return 1;

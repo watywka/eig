@@ -11,6 +11,8 @@ enum FUNC formula(char* str)
 {
     if(strcmp(str,"test")==0)
         return test;
+    if(strcmp(str,"test2")==0)
+        return test2;
     return errf;
 }
 
@@ -32,12 +34,29 @@ void fill(enum FUNC xin,int n, double* a)
                     }
                     else if(i==j)
                     {
-                         a[A(i,j)] = 1;
+                        a[A(i,j)] = 1;
+                    }
+                    else 
+                    {
+                        a[A(i,j)] = 0;
+                case test2:
+                    if(i == n -1)
+                    {
+                        a[A(i,j)] = j+1;
+                    }
+                    else if(j == n-1)
+                    {
+                        a[A(i,j)] = i+1;
+                    }
+                    else if(i==j)
+                    {
+                        a[A(i,j)] = 1;
                     }
                     else 
                     {
                         a[A(i,j)] = 0;
                     }
+                   }
                 case errf:
                     break;
             }
@@ -75,6 +94,7 @@ void printm(FILE* fout, int n, double* a)
         fprintf(fout,".. %.2f  \n",a[(n-1)*n + n -1]);
 
     }
+    fprintf(fout,"\n");
 
 }
 
@@ -104,15 +124,24 @@ int tridiag(int n, double* a, double e)
     double sphi, cphi, olx, oly, olbii, olbij, olbji, olbjj, sq, tmp1, tmp2, nor, v1, v2, norma;
     int re=0;
     int r = n;
+    double D = 0, k = 0, p = 0;
     norma = norm(n,a);
+    
+    //
+    //Privedeniye k tridiag vrascheneim
+    //
+
     for(int j = 0;j<n-2;j++)
     {
         for(int i = j+2; i<n;i++)
         {
             sq = sqrt(a[A(j+1,j)]*a[A(j+1,j)] + a[A(i,j)]*a[A(i,j)]);
-            if(eq(sq,0)) return 0;
-            cphi = a[A(j+1,j)]/sq;
-            sphi = - a[A(i,j)]/sq;
+            if(eq(sq,0)) continue;
+            else
+            {
+                cphi = a[A(j+1,j)]/sq;
+                sphi = - a[A(i,j)]/sq;
+            }
             for(int k = j; k<n;k++)
             {
                 olx = a[A(j+1,k)];
@@ -136,56 +165,66 @@ int tridiag(int n, double* a, double e)
 
         }
     }
-    printf("\n\n Tridiag: \n");
-    printm(stdout, n,a);
+
+    //
+    //Применение к подматрице 0,..,r алгоритма
+    //
+
     while(r>2)
     {
-    while(fabs(a[A(r-1,r-2)])>e*norma)
-    {
-        re++;
-        for(int i = 0; i < r-1; i++)
+        while(fabs(a[A(r-2,r-1)])>e*norma)
         {
-            if(eq(a[A(i+1,i)],0)) continue; // a nuznho li otrazhat?(net)
-            sq = sqrt(a[A(i,i)]*a[A(i,i)] + a[A(i+1,i)]*a[A(i+1,i)]);
-            nor = sqrt((a[A(i,i)] - sq)*(a[A(i,i)] - sq) + a[A(i+1,i)]*a[A(i+1,i)]);
-            tmp1 =(a[A(i,i)] - sq) /nor;
-            tmp2 = a[A(i+1,i)]/nor;
-            a[A(i,i)] = a[A(i,i)] -2*tmp1*(tmp1*a[A(i,i)]+tmp2*a[A(i+1,i)]);;
-            a[A(i+1,i)] = 0;
-            printf("\n Povernuli perviy stoolbec\n");
-            printm(stdout,n,a);
-            scanf("%lf",&sphi);
-            olx = tmp1 * a[A(i,i+1)] + tmp2 * a[A(i+1,i+1)];
-            a[A(i,i+1)] = a[A(i,i+1)] - 2*tmp1*olx;
-            a[A(i+1,i+1)] = a[A(i+1,i+1)] - 2*tmp2*olx;
-            printf("\n Povernuli vtorooy stoolbec\n");
-            printm(stdout,n,a);
-            if (i<r-2) a[A(i+1,i+2)] = a[A(i+1,i+2)] - 2*tmp2*(tmp1 * a[A(i,i+2)] + tmp2* a[A(i+1,i+2)]);
-            if (i>0)
+            re++;
+            for(int i = 0; i < r-1; i++)
             {
-                olx = v1*a[A(i-1,i-1)] + v2 * a[A(i-1,i)];
-                a[A(i-1,i-1)] = a[A(i-1,i-1)] - 2*v1*olx;
-                a[A(i-1,i)] = a[A(i-1,i)] - 2*v2*olx;
-                olx = v2*a[A(i,i)];
-                a[A(i,i-1)] = - 2*v1*olx;
-                a[A(i,i)] = a[A(i,i)] - 2*v2*olx;
+                if(eq(a[A(i+1,i)],0))
+                {
+                    tmp1 = 0;
+                    tmp2 = 1;
+                }
+                else
+                {
+                    sq = sqrt(a[A(i,i)]*a[A(i,i)] + a[A(i+1,i)]*a[A(i+1,i)]);
+                    nor = sqrt((a[A(i,i)] - sq)*(a[A(i,i)] - sq) + a[A(i+1,i)]*a[A(i+1,i)]);
+                    tmp1 =(a[A(i,i)] - sq) /nor;
+                    tmp2 = a[A(i+1,i)]/nor;
+                }
+                a[A(i,i)] = a[A(i,i)] -2*tmp1*(tmp1*a[A(i,i)]+tmp2*a[A(i+1,i)]);;
+                a[A(i+1,i)] = 0;
+                olx = tmp1 * a[A(i,i+1)] + tmp2 * a[A(i+1,i+1)];
+                a[A(i,i+1)] = a[A(i,i+1)] - 2*tmp1*olx;
+                a[A(i+1,i+1)] = a[A(i+1,i+1)] - 2*tmp2*olx;
+                if (i<r-2) a[A(i+1,i+2)] = a[A(i+1,i+2)] - 2*tmp2*(tmp1 * a[A(i,i+2)] + tmp2* a[A(i+1,i+2)]);
+                if (i>0)
+                {
+                    olx = v1*a[A(i-1,i-1)] + v2 * a[A(i-1,i)];
+                    a[A(i-1,i-1)] = a[A(i-1,i-1)] - 2*v1*olx;
+                    a[A(i-1,i)] = a[A(i-1,i)] - 2*v2*olx;
+                    olx = v2*a[A(i,i)];
+                    a[A(i,i-1)] = - 2*v1*olx;
+                    a[A(i,i)] = a[A(i,i)] - 2*v2*olx;
+                }
+                v1 = tmp1;
+                v2 = tmp2;
             }
-            v1 = tmp1;
-            v2 = tmp2;
-            if(i==0) printm(stdout,n,a);
+            olx = v1*a[A(r-2,r-2)] + v2*a[A(r-2,r-1)];
+            a[A(r-2,r-2)] = a[A(r-2,r-2)] - 2*v1*olx;
+            olx = v2*a[A(r-1,r-1)];
+            a[A(r-1,r-2)] = - 2*v1*olx;
+            a[A(r-1,r-1)] = a[A(r-1,r-1)] - 2*v2*olx;
+            for(int i = 0; i < r-1; i++)
+            {
+                a[A(i,i+1)] = a[A(i+1,i)];
+            }
         }
-        olx = v1*a[A(r-2,r-2)] + v2*a[A(r-2,r-1)];
-        a[A(r-2,r-2)] = a[A(r-2,r-2)] - 2*v1*olx;
-        olx = v2*a[A(r-1,r-1)];
-        a[A(r-1,r-2)] = - 2*v1*olx;
-        a[A(r-1,r-1)] = a[A(r-1,r-1)] - 2*v2*olx;
-        for(int i = 0; i < r-1; i++)
-        {
-            a[A(i,i+1)] = a[A(i+1,i)];
-        }
+        r--;
     }
-    r--;
-    }
+    k = a[0]+a[n+1];
+    p = a[0]*a[n+1] - a[1]*a[n];
+    D = sqrt( k*k - 4 * p);
+    a[1] = a[n] = 0;
+    a[0] = (k + D)/2;
+    a[n+1] = (k - D)/2; 
     printf("%d\n",re);
     return 1;
 }

@@ -9,6 +9,7 @@
 enum FUNC
 {
 	test,
+    test2,
     errf
 };
 extern int debug;
